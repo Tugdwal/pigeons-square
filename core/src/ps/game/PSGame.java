@@ -9,20 +9,26 @@ import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 public class PSGame extends ApplicationAdapter
 {
     private final static int DOVES = 4;
+    private static final int FRAME_COLS = 5, FRAME_ROWS = 5;
 
     private Square m_square;
     private ArrayList<Dove> m_doves;
+    private Event m_explosion;
 
     private Texture m_texture_seed;
     private Texture m_texture_dove;
+    private Texture m_texture_explosion;
 
     private TextureRegion m_texture_region_dove;
+
+    private Animation<TextureRegion> m_animation_explosion;
 
     SpriteBatch batch;
 
@@ -54,10 +60,27 @@ public class PSGame extends ApplicationAdapter
 
         m_texture_seed = new Texture(Gdx.files.internal("seed.png"));
         m_texture_dove = new Texture(Gdx.files.internal("dove.png"));
+        m_texture_explosion =  new Texture(Gdx.files.internal("explosion.png"));
 
-        m_texture_region_dove = new TextureRegion(m_texture_dove, 2, 21, 32, 32);
+        int x = 0;
+        int y = 6;
+        int dx = 32;
+        int dy = 32;
+        m_texture_region_dove = new TextureRegion(m_texture_dove, 2 + x * (dx + 2), 21 + y * (dy + 21), dx, dx);
 
         batch = new SpriteBatch();
+
+        TextureRegion[][] tmp = TextureRegion.split(m_texture_explosion, m_texture_explosion.getWidth() / FRAME_COLS, m_texture_explosion.getHeight() / FRAME_ROWS);
+        TextureRegion[] explosion_frames = new TextureRegion[FRAME_COLS * FRAME_ROWS];
+
+        int index = 0;
+        for (int i = 0; i < FRAME_ROWS; i++) {
+            for (int j = 0; j < FRAME_COLS; j++) {
+                explosion_frames[index++] = tmp[i][j];
+            }
+        }
+
+        m_animation_explosion = new Animation<TextureRegion>(0.025f, explosion_frames);
     }
 
     @Override
@@ -86,6 +109,21 @@ public class PSGame extends ApplicationAdapter
             batch.draw(m_texture_region_dove, dove.getX() - m_texture_region_dove.getRegionWidth() / 2 + 1, dove.getY() - m_texture_region_dove.getRegionHeight() / 2 + 1);
         }
 
+        if (m_explosion != null) {
+            TextureRegion texture_explosion = m_animation_explosion.getKeyFrame(m_explosion.getDuration());
+            batch.draw(texture_explosion, m_explosion.getX() - texture_explosion.getRegionWidth() / 2 + 1, m_explosion.getY() - texture_explosion.getRegionHeight() / 2 + 1);
+
+            if (m_animation_explosion.isAnimationFinished(m_explosion.getDuration())) {
+                m_explosion = null;
+            } else {
+                m_explosion.update(Gdx.graphics.getDeltaTime());
+            }
+        } else if (randomEvent()) {
+            m_explosion = new Event(ThreadLocalRandom.current().nextInt(0, Gdx.graphics.getWidth()), ThreadLocalRandom.current().nextInt(0, Gdx.graphics.getHeight()));
+
+            // TODO : Notify doves
+        }
+
         batch.end();
     }
 
@@ -98,7 +136,14 @@ public class PSGame extends ApplicationAdapter
 
         m_texture_seed.dispose();
         m_texture_dove.dispose();
+        m_texture_explosion.dispose();
 
         batch.dispose();
+    }
+
+    private boolean randomEvent()
+    {
+        // TODO : Probability
+        return true;
     }
 }

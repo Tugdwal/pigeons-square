@@ -16,6 +16,11 @@ public class Entity
         return m_position;
     }
 
+    public void setPosition(Point position)
+    {
+        m_position = position;
+    }
+
     public int getX()
     {
         return m_position.getX();
