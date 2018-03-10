@@ -13,6 +13,8 @@ import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
+import ps.math.Point;
+
 public class PSGame extends ApplicationAdapter
 {
     private final static int DOVES = 4;
@@ -121,7 +123,8 @@ public class PSGame extends ApplicationAdapter
         } else if (randomEvent()) {
             m_explosion = new Event(ThreadLocalRandom.current().nextInt(0, Gdx.graphics.getWidth()), ThreadLocalRandom.current().nextInt(0, Gdx.graphics.getHeight()));
 
-            // TODO : Notify doves
+            notifyDoves(m_explosion.getPosition());
+            
         }
 
         batch.end();
@@ -144,6 +147,19 @@ public class PSGame extends ApplicationAdapter
     private boolean randomEvent()
     {
         // TODO : Probability
-        return true;
+    	if (ThreadLocalRandom.current().nextInt(1, 100) <= 05)
+    		return true;
+    	
+        return false;
+    }
+    
+    private void notifyDoves (Point explosionPosition) {
+    	for (Dove dove : m_doves) {
+        	System.out.println(explosionPosition.dist(dove.getPosition()));
+			if (explosionPosition.dist(dove.getPosition()) <= 100) {
+				System.out.println(dove.toString() + " is scared : " + explosionPosition.dist(dove.getPosition()));
+				dove.setScared(explosionPosition);
+			}
+		}
     }
 }
