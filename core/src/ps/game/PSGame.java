@@ -32,6 +32,8 @@ public class PSGame extends ApplicationAdapter
 
     private Animation<TextureRegion> m_animation_explosion;
 
+    private float m_last_explosion = 0.0f;
+
     SpriteBatch batch;
 
     @Override
@@ -54,7 +56,7 @@ public class PSGame extends ApplicationAdapter
                     ThreadLocalRandom.current().nextInt(0, Dove.Type.values().length),
                     ThreadLocalRandom.current().nextInt(0, Gdx.graphics.getWidth()),
                     ThreadLocalRandom.current().nextInt(0, Gdx.graphics.getHeight()),
-                    ThreadLocalRandom.current().nextInt(1, 10),
+                    ThreadLocalRandom.current().nextInt(2, 10),
                     m_square
                     ));
             new Thread(m_doves.get(i), String.valueOf(i)).start();
@@ -117,6 +119,7 @@ public class PSGame extends ApplicationAdapter
 
             if (m_animation_explosion.isAnimationFinished(m_explosion.getDuration())) {
                 m_explosion = null;
+                m_last_explosion = 0.0f;
             } else {
                 m_explosion.update(Gdx.graphics.getDeltaTime());
             }
@@ -124,8 +127,9 @@ public class PSGame extends ApplicationAdapter
             m_explosion = new Event(ThreadLocalRandom.current().nextInt(0, Gdx.graphics.getWidth()), ThreadLocalRandom.current().nextInt(0, Gdx.graphics.getHeight()));
 
             notifyDoves(m_explosion.getPosition());
-            
         }
+
+        m_last_explosion += Gdx.graphics.getDeltaTime();
 
         batch.end();
     }
@@ -146,20 +150,14 @@ public class PSGame extends ApplicationAdapter
 
     private boolean randomEvent()
     {
-        // TODO : Probability
-    	if (ThreadLocalRandom.current().nextInt(1, 100) <= 05)
-    		return true;
-    	
-        return false;
+        return ThreadLocalRandom.current().nextInt(0, 10) * m_last_explosion > 50.0f;
     }
-    
+
     private void notifyDoves (Point explosionPosition) {
-    	for (Dove dove : m_doves) {
-        	System.out.println(explosionPosition.dist(dove.getPosition()));
-			if (explosionPosition.dist(dove.getPosition()) <= 100) {
-				System.out.println(dove.toString() + " is scared : " + explosionPosition.dist(dove.getPosition()));
-				dove.setScared(explosionPosition);
-			}
-		}
+        for (Dove dove : m_doves) {
+            if (explosionPosition.dist(dove.getPosition()) <= 100) {
+                dove.setScared(explosionPosition);
+            }
+        }
     }
 }

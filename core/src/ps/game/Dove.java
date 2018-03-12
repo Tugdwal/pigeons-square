@@ -16,8 +16,8 @@ public class Dove extends Entity implements Runnable
     private Square m_square;
 
     private boolean m_running;
-    
-    private Point m_explosion_position;
+
+    private Point m_escape_target;
 
     {
         m_running = false;
@@ -29,7 +29,6 @@ public class Dove extends Entity implements Runnable
         m_size = size;
         m_speed = speed;
         m_square = square;
-        m_explosion_position = null;
     }
 
     public String getName()
@@ -41,10 +40,8 @@ public class Dove extends Entity implements Runnable
     {
         m_position.addX(delta(m_position.getX(), target.getX()));
         m_position.addY(delta(m_position.getY(), target.getY()));
-
-        //System.out.println(getName() + " - Target : " + target + " - Moving to " + m_position);
     }
-    
+
     public void moveFood (Seed food) {
     	if (food.getPosition().dist(m_position) <= m_size) {
 	        if (food.edible() && m_square.eat(food)) {
@@ -54,13 +51,13 @@ public class Dove extends Entity implements Runnable
 	        move(food.getPosition());
 	    }
 	}
-    
+
     public void moveScared () {
-    	if (m_explosion_position.dist(m_position) <= m_size) {
-    		m_explosion_position = null;
+        if (m_escape_target.dist(m_position) <= m_size) {
+            m_escape_target = null;
     	}
     	else {
-    		move(m_explosion_position);
+            move(m_escape_target);
     	}
     }
 
@@ -71,7 +68,7 @@ public class Dove extends Entity implements Runnable
         System.out.println(getName() + " - Coming");
 
         while (m_running) {
-        	if (m_explosion_position != null) {
+            if (m_escape_target != null) {
         		moveScared();
         	}
         	else {
@@ -119,10 +116,10 @@ public class Dove extends Entity implements Runnable
             return new Dove(x, y, speed, 1, square);
         }
     }
-    
+
     public void setScared(Point explosionPosition) {
-    	int x = m_position.getX() - (explosionPosition.getX() - m_position.getX() - 100 % (explosionPosition.getX() - m_position.getX()));
-    	int y = m_position.getY() - (explosionPosition.getY() - m_position.getY() - 100 % (explosionPosition.getY() - m_position.getY()));
-    	m_explosion_position = new Point (x, y);
+        int x = m_position.getX() - (explosionPosition.getX() - m_position.getX() - 100 % (explosionPosition.getX() - m_position.getX()));
+        int y = m_position.getY() - (explosionPosition.getY() - m_position.getY() - 100 % (explosionPosition.getY() - m_position.getY()));
+        m_escape_target = new Point(x, y);
     }
 }
